@@ -41,28 +41,33 @@ class UI():
                 pygame.draw.line(window, (0,0,0), (i*self.gap,0), (i*self.gap, Window_Width), 1)
                 pygame.draw.line(window, (0,0,0), (0,i*self.gap), (Window_Width, i*self.gap), 1)
 
+    def victory(self):
+        fnt = pygame.font.SysFont("comicsansms", 125, True)
+        vic= pygame.Rect(50,150,500,300)       
+        victext= fnt.render(f"Victory!",True,"White")
+        pygame.draw.rect(window,(0,175,200),vic)
+        window.blit(victext,(65, 200))
+
     def draw_mainboard(self):
+        window.fill((255,255,255))
         self.draw_edge()
         self.draw_grid()
         self.draw_nums(self.Sudokuboard.board)
-"""""
-def sketch(value):
-    if(value == 999):
-        if (Mainboard.testboard[selected[1]][selected[0]] == Mainboard.solution[selected[1]][selected[0]]):
-            Mainboard.board[selected[1]][selected[0]] = Mainboard.testboard[selected[1]][selected[0]]
-            Mainboard.testboard[selected[1]][selected[0]] = 0
-    else:
-        print("else")
-        if Mainboard.board[selected[1]][selected[0]]==0 and value<=Mainboard.board_size:
-            if (Mainboard.testboard[selected[1]][selected[0]]*10)+value>Mainboard.board_size:
-                Mainboard.testboard[selected[1]][selected[0]]=value
-            else:
-                print("elseelse")
-                Mainboard.testboard[selected[1]][selected[0]]=(Mainboard.testboard[selected[1]][selected[0]]*10)+value
-    if Mainboard.find_empty() == None:
-        print("vict")
-        Mainboard.vict=True
-"""
+        self.draw_nums(Mainboard.testboard,False,(150,150,150))
+        if selected != None:
+            MainUI.cube_glow(selected)
+        if Mainboard.vict == True:
+            self.victory()
+        x,y = pygame.mouse.get_pos()
+        Butttons.draw_buttons(x,y)
+
+    def cube_glow(self,cord):
+        gap=Window_Width/Mainboard.board_size
+        pygame.draw.line(window, (255,0,0), (cord[0]*gap,cord[1]*gap), ((cord[0]+1)*gap,(cord[1])*gap), 5)
+        pygame.draw.line(window, (255,0,0), (cord[0]*gap,cord[1]*gap), ((cord[0])*gap,(cord[1]+1)*gap), 5)
+        pygame.draw.line(window, (255,0,0), ((cord[0]+1)*gap,(cord[1])*gap), ((cord[0]+1)*gap,(cord[1]+1)*gap), 5)
+        pygame.draw.line(window, (255,0,0), ((cord[0])*gap,(cord[1]+1)*gap), ((cord[0]+1)*gap,(cord[1]+1)*gap), 5)
+
 class buttons():
     def __init__(self):
         self.fnt = pygame.font.SysFont("comicsansms", 20, True)
@@ -75,11 +80,11 @@ class buttons():
         self.solvetext= self.fnt.render("SOLVE",True,"White")
     def draw_buttons(self,x,y):
         #print(x,y)
-        self.draw_button(self.new4by4,self.new4by4text)
-        self.draw_button(self.new9by9,self.new9by9text)
-        self.draw_button(self.solve,self.solvetext)
+        self.draw_button(self.new4by4,self.new4by4text,x,y)
+        self.draw_button(self.new9by9,self.new9by9text,x,y)
+        self.draw_button(self.solve,self.solvetext,x,y)
 
-    def draw_button(self,button,buttontext):
+    def draw_button(self,button,buttontext,x,y):
         textwidth=buttontext.get_width()
         buttonwidth=button.width
         xoffset=(buttonwidth-textwidth)/2
@@ -88,21 +93,6 @@ class buttons():
         else:
             pygame.draw.rect(window,(0,200,200),button)
         window.blit(buttontext,(button.x+xoffset, button.y+15))
-
-
-def cube_glow(cord):
-    gap=Window_Width/Mainboard.board_size
-    pygame.draw.line(window, (255,0,0), (cord[0]*gap,cord[1]*gap), ((cord[0]+1)*gap,(cord[1])*gap), 5)
-    pygame.draw.line(window, (255,0,0), (cord[0]*gap,cord[1]*gap), ((cord[0])*gap,(cord[1]+1)*gap), 5)
-    pygame.draw.line(window, (255,0,0), ((cord[0]+1)*gap,(cord[1])*gap), ((cord[0]+1)*gap,(cord[1]+1)*gap), 5)
-    pygame.draw.line(window, (255,0,0), ((cord[0])*gap,(cord[1]+1)*gap), ((cord[0]+1)*gap,(cord[1]+1)*gap), 5)
-
-def victory():
-    fnt = pygame.font.SysFont("comicsansms", 125, True)
-    vic= pygame.Rect(50,150,500,300)       
-    victext= fnt.render(f"Victory!",True,"White")
-    pygame.draw.rect(window,(0,175,200),vic)
-    window.blit(victext,(65, 200))
 
 def initizlize():
     global Window_Width
@@ -125,8 +115,6 @@ def initizlize():
 
 
 initizlize()
-
-
 while run:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -177,20 +165,6 @@ while run:
                     print(f"UIiiii:{MainUI.Sudokuboard.board}\nMain:{Mainboard.board}")
                     Mainboard.sketch(999,selected)
 
-
-
-                
-    
-    window.fill((255,255,255))
-    x,y = pygame.mouse.get_pos()
-    Butttons.draw_buttons(x,y)
     MainUI.draw_mainboard()
-    MainUI.draw_nums(Mainboard.testboard,False,(150,150,150))
-
-    if selected != None:
-        cube_glow(selected)
-    if Mainboard.vict == True:
-        victory()
-    
     pygame.display.flip()
 pygame.quit()

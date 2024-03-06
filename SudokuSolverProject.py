@@ -10,7 +10,8 @@ class SodokuSolver:
         self.testboard = self.create_empty(self.box_size)
         self.solution = Puzzle_Board
         self.vict=False
-    # prints out any valid sodoku board
+    
+    # prints out board in terminal
     def print_sudoku_board(self):
         board_size=len(self.board)
         for i in range(self.board_size):
@@ -27,6 +28,7 @@ class SodokuSolver:
                     print(f" {self.board[i][k]} ",end="")
         print("Printed^\n")
 
+    #adds number to self.solution to track what player is considering in a square
     def sketch(self,value,cord):
         if(value == 999):
             if (self.testboard[cord[1]][cord[0]] == self.solution[cord[1]][cord[0]]):
@@ -43,7 +45,8 @@ class SodokuSolver:
         if self.find_empty() == None:
             print("vict")
             self.vict=True   
-    #Finds an empty square and reutrns in form (row,column)
+    
+    #return cord of first empty square in self.board returns in row,column form
     def find_empty(self):
         for i in range (self.board_size):
             for j in range (self.board_size):
@@ -51,6 +54,7 @@ class SodokuSolver:
                     return(i,j)
         return None
     
+    #sets self.board and self.solution to board of sopesified size size is size of boxes in board so size 2 is 4x4 board
     def create_empty(self,size):
         board=[]
         self.board_size = int(size*size) #contains number of row and columns assumes there is same num of row/columns
@@ -63,6 +67,7 @@ class SodokuSolver:
         
         return board
     
+    #checks if a value=num is valid in a specific cordinate cord is in Row,Column form
     def is_valid(self, cord, num):
         #checks the Column
         for i in range(self.board_size):
@@ -83,12 +88,14 @@ class SodokuSolver:
                     return False
         return True
     
+    #Fills the first empty box in self.board in with the correct number
     def hint(self):
         cord=self.find_empty()
         if cord!=None:
             self.board[cord[0]][cord[1]]=self.solution[cord[0]][cord[1]]
             self.testboard[cord[0]][cord[1]]=0
-    #Solve the puzzle using backtracking
+    
+    #Solve self.board using backtracking
     def solve_board(self):
         current_cord = self.find_empty() 
         # return true if puzzle is fully solved
@@ -102,6 +109,7 @@ class SodokuSolver:
                 self.board[current_cord[0]][current_cord[1]] = 0
         return False
     
+    #sets self.solution adn self.board to a random solved board of spesified size
     def create_random(self,size):
         self.board=self.create_empty(size) 
         self.testboard = self.create_empty(self.box_size)      
@@ -114,7 +122,7 @@ class SodokuSolver:
             self.solution.append(temp)
         return True
 
-
+    #Used to fill in an empty board with random numbers resulting in a solved board with numnbers randomized
     def fill_random(self):       
         current_cord = self.find_empty() 
         valuelist = []
@@ -131,6 +139,7 @@ class SodokuSolver:
                 self.board[current_cord[0]][current_cord[1]] = 0
         return False
     
+    #Uses Backtracking to return weather or not self.board currently has only 1 solution return boolean
     def only_one(self,initial=True):
         current_cord = self.find_empty()
         if initial == True:
@@ -155,45 +164,33 @@ class SodokuSolver:
             return True
         return False
         
-    #Solve the puzzle using backtracking
-    def solve_board(self):
-        current_cord = self.find_empty() 
-        # return true if puzzle is fully solved
-        if current_cord == None:
-            return True       
-        for value in range (1,self.board_size+1):
-            if self.is_valid(current_cord,value):
-                self.board[current_cord[0]][current_cord[1]]=value
-                if self.solve_board():
-                    return True
-                self.board[current_cord[0]][current_cord[1]] = 0
-        return False
-
+    #removes givens from a board until givens while making sure the board only has 1 solutioon 
+    #will loop through all givens in random order until givens<=difficulty or until loop has gone through all givens
     def set_difficulty(self,difficulty):
         nonemptyboxes=[]
-        givens=0#count is how many givens remain on board
-        totalsquares = self.board_size*self.board_size
+        givens=0 #givens is how many givens remain on board
+        test=0 # tracks how many givens we have tried to remove
         for row in range(self.board_size):
             for column in range(self.board_size):
                 if self.board[row][column] != 0:
                     nonemptyboxes.append([row,column])
                     givens += 1
         random.shuffle(nonemptyboxes)
-        test=0
-        for cordinate in nonemptyboxes:
 
+
+        for cordinate in nonemptyboxes:
             temp = self.board[cordinate[0]][cordinate[1]]
             self.board[cordinate[0]][cordinate[1]]=0
-            testign = self.only_one()
+            testing = self.only_one()
             test+=1
-            #print(test, testign, givens)
-            if testign == False:
+            #print(test, testing, givens)
+            if testing == False:
                 self.board[cordinate[0]][cordinate[1]]=temp
             else:
                 #print(cordinate)
                 givens -= 1
-            if givens <= difficulty:
-                return True
+                if givens <= difficulty:
+                    return True
         return False                      
 
         
