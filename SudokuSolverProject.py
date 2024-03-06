@@ -10,7 +10,8 @@ class SodokuSolver:
         self.testboard = self.create_empty(self.box_size)
         self.solution = Puzzle_Board
         self.vict=False
-    
+        self.lose=False
+        self.mistake=0
     # prints out board in terminal
     def print_sudoku_board(self):
         board_size=len(self.board)
@@ -31,21 +32,23 @@ class SodokuSolver:
     #adds number to self.solution to track what player is considering in a square
     def sketch(self,value,cord):
         if(value == 999):
-            if (self.testboard[cord[1]][cord[0]] == self.solution[cord[1]][cord[0]]):
-                self.board[cord[1]][cord[0]] = self.testboard[cord[1]][cord[0]]
-                self.testboard[cord[1]][cord[0]] = 0
+            if (self.testboard[cord[0]][cord[1]] == self.solution[cord[0]][cord[1]]):
+                self.board[cord[0]][cord[1]] = self.testboard[cord[0]][cord[1]]
+                self.testboard[cord[0]][cord[1]] = 0
+            else:
+                if self.testboard[cord[0]][cord[1]] != 0:
+                    self.mistake += 1
         else:
-            print("else")
-            if self.board[cord[1]][cord[0]]==0 and value<=self.board_size:
-                if (self.testboard[cord[1]][cord[0]]*10)+value>self.board_size:
-                    self.testboard[cord[1]][cord[0]]=value
+            if self.board[cord[0]][cord[1]]==0 and value<=self.board_size:
+                if (self.testboard[cord[0]][cord[1]]*10)+value>self.board_size:
+                    self.testboard[cord[0]][cord[1]]=value
                 else:
-                    print("elseelse")
-                    self.testboard[cord[1]][cord[0]]=(self.testboard[cord[1]][cord[0]]*10)+value
+                    self.testboard[cord[0]][cord[1]]=(self.testboard[cord[1]][cord[0]]*10)+value
         if self.find_empty() == None:
-            print("vict")
+            print("winner")
             self.vict=True   
-    
+        if self.mistake>=5:
+            self.lose=True
     #return cord of first empty square in self.board returns in row,column form
     def find_empty(self):
         for i in range (self.board_size):
@@ -98,12 +101,15 @@ class SodokuSolver:
     #Solve self.board using backtracking
     def solve_board(self):
         current_cord = self.find_empty() 
+        
         # return true if puzzle is fully solved
         if current_cord == None:
-            return True       
+            return True 
+        else:
+            self.testboard[current_cord[0]][current_cord[1]]=0      
         for value in range (1,self.board_size+1):
             if self.is_valid(current_cord,value):
-                self.board[current_cord[0]][current_cord[1]]=value
+                self.board[current_cord[0]][current_cord[1]]=value                
                 if self.solve_board():
                     return True
                 self.board[current_cord[0]][current_cord[1]] = 0
@@ -112,7 +118,10 @@ class SodokuSolver:
     #sets self.solution adn self.board to a random solved board of spesified size
     def create_random(self,size):
         self.board=self.create_empty(size) 
-        self.testboard = self.create_empty(self.box_size)      
+        self.testboard = self.create_empty(self.box_size)
+        self.vict=False
+        self.lose=False
+        self.mistake=0      
         self.fill_random()
         self.solution=[]
         for row in range(len(self.board)):
@@ -140,20 +149,23 @@ class SodokuSolver:
         return False
     
     #Uses Backtracking to return weather or not self.board currently has only 1 solution return boolean
-    def only_one(self,initial=True):
+    def only_one(self,initial=False):
         current_cord = self.find_empty()
         if initial == True:
-            self.found = 0 
+            self.found = 0
+            if current_cord == None:
+                return True
         if current_cord == None:
-            self.found += 1
-            if self.found==2:
+            self.found += 1 
+            if self.found>1:
                 return True   
             else:
-                return False   
+                return False
+               
         for value in range (1,self.board_size+1):
             if self.is_valid(current_cord,value):
                 self.board[current_cord[0]][current_cord[1]]=value
-                if self.only_one(False):
+                if self.only_one():
                     self.board[current_cord[0]][current_cord[1]] = 0
                     if initial == True:
                         return False
@@ -181,9 +193,10 @@ class SodokuSolver:
         for cordinate in nonemptyboxes:
             temp = self.board[cordinate[0]][cordinate[1]]
             self.board[cordinate[0]][cordinate[1]]=0
-            testing = self.only_one()
+
+            testing = self.only_one(True)
             test+=1
-            #print(test, testing, givens)
+
             if testing == False:
                 self.board[cordinate[0]][cordinate[1]]=temp
             else:
@@ -203,18 +216,18 @@ SudokuBoardE = [
     [0,0,0,0,0,0,0,0,0],
     [0,0,0,0,0,0,0,0,0],
     [0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0]
+    [0,0,0,0,0,0,0,9,9]
 ]
 SudokuBoard = [
-    [0,1,6,7,0,5,3,0,0],
-    [4,0,0,0,6,0,0,0,0],
-    [2,0,0,0,0,0,0,0,1],
-    [6,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,3,0,8,0],
-    [0,9,7,0,5,0,0,0,4],
-    [0,2,0,0,0,0,0,0,0],
-    [0,0,0,9,0,0,4,0,0],
-    [0,5,1,0,7,0,0,0,9]
+    [0,6,0,4,0,7,0,8,0],
+    [8,0,2,0,9,0,0,4,0],
+    [4,0,0,2,8,0,0,0,1],
+    [0,0,4,0,7,0,8,2,0],
+    [0,0,7,0,5,0,0,6,9],
+    [0,0,1,9,2,3,0,0,0],
+    [0,0,0,7,0,9,0,0,4],
+    [0,4,0,3,0,0,6,9,0],
+    [0,0,6,0,0,8,0,1,2]
 ]
 SudokuBoard2 = [
     [4,1,0,3],
@@ -225,4 +238,5 @@ SudokuBoard2 = [
 SudokuBoard3 = [
     [1]
 ]
+
 
