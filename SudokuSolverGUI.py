@@ -1,12 +1,48 @@
 import pygame
 from SudokuSolverProject import*
-import time
 pygame.init()
 
-class UI():
-    def __init__(self,Theboard):
+
+class buttons():
+    def __init__(self):
+        self.fnt = pygame.font.SysFont("comicsansms", 20, True)
+        self.fnt2 = pygame.font.SysFont("comicsansms", 125, True)
+        self.ycord=(Window_Width+(Window_Hieght-Window_Width)/2)-30
+        self.new4by4= pygame.Rect(10,self.ycord,110,60)       
+        self.new4by4text= self.fnt.render("4x4",True,"White")
+        self.new9by9= pygame.Rect(140,self.ycord,110,60)       
+        self.new9by9text= self.fnt.render("9x9",True,"White")
+        self.solve= pygame.Rect(270,self.ycord,110,60)       
+        self.solvetext= self.fnt.render("SOLVE",True,"White")
+        self.mistakes= pygame.Rect(400,self.ycord,180,60)  
+        self.mistakestext= self.fnt.render(f"Mistakes: {Mainboard.mistake}",True,"Red")
+        self.defe= pygame.Rect(50,150,500,300)       
+        self.defetext= self.fnt2.render(f"Defeat",True,"Red")
+    def draw_buttons(self,x,y):
+        #print(x,y)
+        self.mistakestext= self.fnt.render(f"Mistakes: {Mainboard.mistake}",True,"Red")
+        self.draw_button(self.new4by4,self.new4by4text,x,y)
+        self.draw_button(self.new9by9,self.new9by9text,x,y)
+        self.draw_button(self.solve,self.solvetext,x,y)
+        self.draw_button(self.mistakes,self.mistakestext,x,y)
+
+    def draw_button(self,button,buttontext,x,y):
+        textwidth=buttontext.get_width()
+        buttonwidth=button.width
+        xoffset=(buttonwidth-textwidth)/2
+        if button.x <= x <= button.x+110 and button.y <= y <= button.y+60:
+            pygame.draw.rect(window,(0,150,200),button)
+        else:
+            pygame.draw.rect(window,(0,200,200),button)
+        window.blit(buttontext,(button.x+xoffset, button.y+15))
+
+class UI(buttons):
+
+    def __init__(self,Theboard,):
+        super().__init__()
         self.Sudokuboard=Theboard
         self.gap=Window_Width/self.Sudokuboard.board_size
+        self.selected=None
 
     def draw_nums(self,board,bold=True,rgb=(0,0,0)):
         self.gap=Window_Width/self.Sudokuboard.board_size
@@ -41,12 +77,47 @@ class UI():
                 pygame.draw.line(window, (0,0,0), (i*self.gap,0), (i*self.gap, Window_Width), 1)
                 pygame.draw.line(window, (0,0,0), (0,i*self.gap), (Window_Width, i*self.gap), 1)
 
+    def solve_visually(self):
+        current_cord = Mainboard.find_empty()
+        pause=25 
+        # return true if puzzle is fully solved
+        if current_cord == None:
+            return True 
+        else:
+            Mainboard.testboard[current_cord[0]][current_cord[1]]=0            
+        for value in range (1,Mainboard.board_size+1):
+            if Mainboard.is_valid(current_cord,value):
+                Mainboard.board[current_cord[0]][current_cord[1]]=value
+                self.selected=current_cord
+                self.draw_mainboard()
+                pygame.display.flip()
+                pygame.time.delay(pause)                
+                if self.solve_visually():
+                    return True
+                Mainboard.board[current_cord[0]][current_cord[1]] = 0
+                self.selected=current_cord
+                self.draw_mainboard()
+                pygame.display.flip()
+                pygame.time.delay(pause)
+        return False
+
     def victory(self):
         fnt = pygame.font.SysFont("comicsansms", 125, True)
-        vic= pygame.Rect(50,150,500,300)       
+        vic= pygame.Rect(50,150,500,300)
         victext= fnt.render(f"Victory!",True,"White")
+        textwidth=victext.get_width()
+        buttonwidth=vic.width
+        xoffset=(buttonwidth-textwidth)/2       
         pygame.draw.rect(window,(0,175,200),vic)
-        window.blit(victext,(65, 200))
+        window.blit(victext,(vic.x+xoffset, vic.y+50))
+
+    def defeat(self): 
+        textwidth=self.defetext.get_width()
+        buttonwidth=self.defe.width
+        xoffset=(buttonwidth-textwidth)/2
+        pygame.draw.rect(window,(0,0,0),self.defe)
+        window.blit(self.defetext,(self.defe.x+xoffset, self.defe.y+50))
+
 
     def draw_mainboard(self):
         window.fill((255,255,255))
@@ -54,64 +125,44 @@ class UI():
         self.draw_grid()
         self.draw_nums(self.Sudokuboard.board)
         self.draw_nums(Mainboard.testboard,False,(150,150,150))
-        if selected != None:
-            MainUI.cube_glow(selected)
-        if Mainboard.vict == True:
+        if self.selected != None:
+            MainUI.cube_glow(self.selected)
+        if Mainboard.vict == True and Mainboard.lose == False:
             self.victory()
+        elif Mainboard.lose == True:
+            self.defeat()
         x,y = pygame.mouse.get_pos()
-        Butttons.draw_buttons(x,y)
+        self.draw_buttons(x,y)
 
     def cube_glow(self,cord):
         gap=Window_Width/Mainboard.board_size
-        pygame.draw.line(window, (255,0,0), (cord[0]*gap,cord[1]*gap), ((cord[0]+1)*gap,(cord[1])*gap), 5)
-        pygame.draw.line(window, (255,0,0), (cord[0]*gap,cord[1]*gap), ((cord[0])*gap,(cord[1]+1)*gap), 5)
-        pygame.draw.line(window, (255,0,0), ((cord[0]+1)*gap,(cord[1])*gap), ((cord[0]+1)*gap,(cord[1]+1)*gap), 5)
-        pygame.draw.line(window, (255,0,0), ((cord[0])*gap,(cord[1]+1)*gap), ((cord[0]+1)*gap,(cord[1]+1)*gap), 5)
+        pygame.draw.line(window, (255,0,0), (cord[1]*gap,cord[0]*gap), ((cord[1]+1)*gap,(cord[0])*gap), 5)
+        pygame.draw.line(window, (255,0,0), (cord[1]*gap,cord[0]*gap), ((cord[1])*gap,(cord[0]+1)*gap), 5)
+        pygame.draw.line(window, (255,0,0), ((cord[1]+1)*gap,(cord[0])*gap), ((cord[1]+1)*gap,(cord[0]+1)*gap), 5)
+        pygame.draw.line(window, (255,0,0), ((cord[1])*gap,(cord[0]+1)*gap), ((cord[1]+1)*gap,(cord[0]+1)*gap), 5)
 
-class buttons():
-    def __init__(self):
-        self.fnt = pygame.font.SysFont("comicsansms", 20, True)
-        self.ycord=(Window_Width+(Window_Hieght-Window_Width)/2)-30
-        self.new4by4= pygame.Rect(10,self.ycord,110,60)       
-        self.new4by4text= self.fnt.render("4x4",True,"White")
-        self.new9by9= pygame.Rect(140,self.ycord,110,60)       
-        self.new9by9text= self.fnt.render("9x9",True,"White")
-        self.solve= pygame.Rect(270,self.ycord,110,60)       
-        self.solvetext= self.fnt.render("SOLVE",True,"White")
-    def draw_buttons(self,x,y):
-        #print(x,y)
-        self.draw_button(self.new4by4,self.new4by4text,x,y)
-        self.draw_button(self.new9by9,self.new9by9text,x,y)
-        self.draw_button(self.solve,self.solvetext,x,y)
 
-    def draw_button(self,button,buttontext,x,y):
-        textwidth=buttontext.get_width()
-        buttonwidth=button.width
-        xoffset=(buttonwidth-textwidth)/2
-        if button.x <= x <= button.x+110 and button.y <= y <= button.y+60:
-            pygame.draw.rect(window,(0,150,200),button)
-        else:
-            pygame.draw.rect(window,(0,200,200),button)
-        window.blit(buttontext,(button.x+xoffset, button.y+15))
+
+
+
+
 
 def initizlize():
     global Window_Width
     global Window_Hieght
     global window
-    global Butttons
     global Mainboard
     global MainUI
     global run
-    global selected
     Window_Width = 600
-    Window_Hieght = 700
+    Window_Hieght = 700    
     window = pygame.display.set_mode((Window_Width, Window_Hieght))
-    pygame.display.set_caption("Sudoku")
-    Butttons = buttons()
+    pygame.display.set_caption("Sudoku")   
     Mainboard = SodokuSolver()
     MainUI = UI(Mainboard)
     run=True
-    selected=None
+    Mainboard.create_random(3)
+    Mainboard.set_difficulty(35)
 
 
 initizlize()
@@ -120,50 +171,52 @@ while run:
         if event.type == pygame.QUIT:
             run = False
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            if Butttons.new4by4.collidepoint(event.pos):
-                Mainboard.vict=False
+            if MainUI.new4by4.collidepoint(event.pos):
                 Mainboard.create_random(2)
                 Mainboard.set_difficulty(0)
-            elif Butttons.new9by9.collidepoint(event.pos):
-                Mainboard.vict=False
+            elif MainUI.new9by9.collidepoint(event.pos):
                 Mainboard.create_random(3)
                 Mainboard.set_difficulty(32)
-            elif Butttons.solve.collidepoint(event.pos):
-                Mainboard.vict=False
+            elif MainUI.solve.collidepoint(event.pos):
                 Mainboard.solve_board()
+            elif MainUI.mistakes.collidepoint(event.pos):
+                Mainboard.vict=False
+                Mainboard.lose=False
             else:
                 gap=Window_Width/Mainboard.board_size
                 x,y = pygame.mouse.get_pos()
-                selected = (int(x//gap),int(y//gap))
-                if selected[0]>=Mainboard.board_size or selected[1]>=Mainboard.board_size:
-                    selected=None
+                MainUI.selected = (int(y//gap),int(x//gap))
+                if MainUI.selected[0]>=Mainboard.board_size or MainUI.selected[1]>=Mainboard.board_size:
+                    MainUI.selected=None
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_h:
                     Mainboard.hint()
-            elif selected != None:
+            elif event.key == pygame.K_SPACE:
+                    MainUI.solve_visually()   
+            elif MainUI.selected != None:
                 if event.key == pygame.K_0:
-                    Mainboard.sketch(0,selected)
+                    Mainboard.sketch(0,MainUI.selected)
                 elif event.key == pygame.K_1:
-                    Mainboard.sketch(1,selected)       
+                    Mainboard.sketch(1,MainUI.selected)       
                 elif event.key == pygame.K_2:
-                    Mainboard.sketch(2,selected)
+                    Mainboard.sketch(2,MainUI.selected)
                 elif event.key == pygame.K_3:
-                    Mainboard.sketch(3,selected)
+                    Mainboard.sketch(3,MainUI.selected)
                 elif event.key == pygame.K_4:
-                    Mainboard.sketch(4,selected)
+                    Mainboard.sketch(4,MainUI.selected)
                 elif event.key == pygame.K_5:
-                    Mainboard.sketch(5,selected)
+                    Mainboard.sketch(5,MainUI.selected)
                 elif event.key == pygame.K_6:
-                    Mainboard.sketch(6,selected)
+                    Mainboard.sketch(6,MainUI.selected)
                 elif event.key == pygame.K_7:
-                    Mainboard.sketch(7,selected)
+                    Mainboard.sketch(7,MainUI.selected)
                 elif event.key == pygame.K_8:
-                    Mainboard.sketch(8,selected)
+                    Mainboard.sketch(8,MainUI.selected)
                 elif event.key == pygame.K_9:
-                    Mainboard.sketch(9,selected)
+                    Mainboard.sketch(9,MainUI.selected)
                 elif event.key == pygame.K_RETURN:
-                    print(f"UIiiii:{MainUI.Sudokuboard.board}\nMain:{Mainboard.board}")
-                    Mainboard.sketch(999,selected)
+                    Mainboard.sketch(999,MainUI.selected)
+                 
 
     MainUI.draw_mainboard()
     pygame.display.flip()
