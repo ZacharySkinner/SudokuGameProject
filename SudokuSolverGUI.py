@@ -18,6 +18,8 @@ class buttons():
         self.mistakestext= self.fnt.render(f"Mistakes: {Mainboard.mistake}",True,"Red")
         self.defe= pygame.Rect(50,150,500,300)       
         self.defetext= self.fnt2.render(f"Defeat",True,"Red")
+
+    #draws all buttons on bottum of scree.    
     def draw_buttons(self,x,y):
         #print(x,y)
         self.mistakestext= self.fnt.render(f"Mistakes: {Mainboard.mistake}",True,"Red")
@@ -26,6 +28,7 @@ class buttons():
         self.draw_button(self.solve,self.solvetext,x,y)
         self.draw_button(self.mistakes,self.mistakestext,x,y)
 
+    #draws indiviual buttons
     def draw_button(self,button,buttontext,x,y):
         textwidth=buttontext.get_width()
         buttonwidth=button.width
@@ -44,6 +47,7 @@ class UI(buttons):
         self.gap=Window_Width/self.Sudokuboard.board_size
         self.selected=None
 
+    #Draws Numnbers in the grid
     def draw_nums(self,board,bold=True,rgb=(0,0,0)):
         self.gap=Window_Width/self.Sudokuboard.board_size
         fontsize=int(self.gap*.5)
@@ -58,6 +62,7 @@ class UI(buttons):
                     yoffset=self.gap/2-text_height/2
                     window.blit(text,(xoffset+column*self.gap,yoffset+row*self.gap))
 
+    #draws the edges of the board
     def draw_edge(self):
         thickness=5
         pygame.draw.line(window, (0,0,0), (thickness/2,0), (thickness/2, Window_Width), thickness)
@@ -65,6 +70,7 @@ class UI(buttons):
         pygame.draw.line(window, (0,0,0), (0,Window_Width), (Window_Width,Window_Width), thickness)
         pygame.draw.line(window, (0,0,0), (Window_Width-thickness/2,0), (Window_Width-thickness/2,Window_Width), thickness)
 
+    #draw the grid
     def draw_grid(self):
         self.gap=Window_Width/self.Sudokuboard.board_size
         fontsize=int(self.gap*.5)
@@ -77,9 +83,10 @@ class UI(buttons):
                 pygame.draw.line(window, (0,0,0), (i*self.gap,0), (i*self.gap, Window_Width), 1)
                 pygame.draw.line(window, (0,0,0), (0,i*self.gap), (Window_Width, i*self.gap), 1)
 
+    #solves the board updates board every time it changes a value and pause breifly
     def solve_visually(self):
         current_cord = Mainboard.find_empty()
-        pause=25 
+        pause=10 
         # return true if puzzle is fully solved
         if current_cord == None:
             return True 
@@ -101,6 +108,7 @@ class UI(buttons):
                 pygame.time.delay(pause)
         return False
 
+    #displays vicotry screen
     def victory(self):
         fnt = pygame.font.SysFont("comicsansms", 125, True)
         vic= pygame.Rect(50,150,500,300)
@@ -111,6 +119,7 @@ class UI(buttons):
         pygame.draw.rect(window,(0,175,200),vic)
         window.blit(victext,(vic.x+xoffset, vic.y+50))
 
+    #displays defeat screen
     def defeat(self): 
         textwidth=self.defetext.get_width()
         buttonwidth=self.defe.width
@@ -118,7 +127,7 @@ class UI(buttons):
         pygame.draw.rect(window,(0,0,0),self.defe)
         window.blit(self.defetext,(self.defe.x+xoffset, self.defe.y+50))
 
-
+    #draws all elements of the board
     def draw_mainboard(self):
         window.fill((255,255,255))
         self.draw_edge()
@@ -134,6 +143,7 @@ class UI(buttons):
         x,y = pygame.mouse.get_pos()
         self.draw_buttons(x,y)
 
+    #highlights selected box
     def cube_glow(self,cord):
         gap=Window_Width/Mainboard.board_size
         pygame.draw.line(window, (255,0,0), (cord[1]*gap,cord[0]*gap), ((cord[1]+1)*gap,(cord[0])*gap), 5)
