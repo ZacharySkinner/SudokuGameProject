@@ -45,7 +45,6 @@ class SodokuSolver:
                 else:
                     self.testboard[cord[0]][cord[1]]=(self.testboard[cord[1]][cord[0]]*10)+value
         if self.find_empty() == None:
-            print("winner")
             self.vict=True   
         if self.mistake>=5:
             self.lose=True
@@ -205,38 +204,5 @@ class SodokuSolver:
                 if givens <= difficulty:
                     return True
         return False                      
-
-        
-SudokuBoardE = [
-    [0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,9,9]
-]
-SudokuBoard = [
-    [0,6,0,4,0,7,0,8,0],
-    [8,0,2,0,9,0,0,4,0],
-    [4,0,0,2,8,0,0,0,1],
-    [0,0,4,0,7,0,8,2,0],
-    [0,0,7,0,5,0,0,6,9],
-    [0,0,1,9,2,3,0,0,0],
-    [0,0,0,7,0,9,0,0,4],
-    [0,4,0,3,0,0,6,9,0],
-    [0,0,6,0,0,8,0,1,2]
-]
-SudokuBoard2 = [
-    [4,1,0,3],
-    [2,3,1,4],
-    [1,4,3,2],
-    [3,2,4,1],
-]
-SudokuBoard3 = [
-    [1]
-]
 
 
